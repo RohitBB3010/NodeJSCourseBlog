@@ -114,6 +114,7 @@ exports.updatePost = (req, res, next) => {
         }
 
         imageUrl = imageUrl.replace(/\\/g, '/');
+
         post.title = title;
         post.content = content;
         post.imageUrl = imageUrl;
@@ -134,12 +135,30 @@ exports.updatePost = (req, res, next) => {
 
 exports.deletePost = (req, res, next) => {
 
+    console.log("Delete attempted");
+    
     const postId = req.params.postId;
 
-    Post.findById(postId).then(result => {
+    Post.findById(postId).then(post => {
+        if(!post){
+            const error = new Error('Post not found');
+            error.statusCode = 404;
+            throw error;
+        }
 
+        //Check logged in user
+        clearImage(post.imageUrl);
+        return Post.findByIdAndDelete(postId);
+    }).then(result => {
+        res.status(200).json({
+            message : 'Post deleted successfully',
+
+        })
     }).catch(err => {
-        console.log(err);
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err);
     })
 }
 
