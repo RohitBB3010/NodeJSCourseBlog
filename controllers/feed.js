@@ -1,20 +1,29 @@
 const { validationResult } = require('express-validator');
-const PostSchema = require('../models/post_model');
+const Post = require('../models/post_model');
 
 exports.getPosts = (req, res, next) => {
-    res.status(200).json({
-        posts : [
-            {
-                title : 'First API request',
-                content: 'I Loveeeee Gujjuuuu',
-                imageUrl : 'images/duck.jpg',
-                creator : {
-                    name : 'Rohit'
-                },
-                date : new Date()
-            }
-        ]
-    });
+
+    Post.find().then(posts => {
+        let modifiedPosts = [];
+
+        posts.map((post) => {
+            modifiedPosts.push({
+                _id : post._id.toString(),
+                title : post.title,
+                content : post.content,
+                creator : post.creator,
+                createdAt : post.createdAt,
+                imageUrl : post.imageUrl
+            });
+        })
+            res.status(200).json({
+                message : 'Posts sent',
+                posts : modifiedPosts
+           
+        });
+    }).catch(err => {
+        console.log(err);
+    })
 }
 
 exports.createPost = (req, res, next) => {
@@ -27,13 +36,17 @@ exports.createPost = (req, res, next) => {
         throw error;
     }
 
+    let imageUrl = req.file.path;
     const title = req.body.title;
     const content = req.body.content;
-    const post = new PostSchema({
+
+    imageUrl = imageUrl.replace(/\\/g, '/');
+
+    const post = new Post({
         title : title,
         content : content,
         creator : { name : 'Rohit' },
-        imageUrl : 'images/Mic.jpg',
+        imageUrl : imageUrl
     });
     
     post.save().then(result => {
@@ -44,4 +57,21 @@ exports.createPost = (req, res, next) => {
         }
         next(error);
     });
+}
+
+exports.getSinglePost = (req, res, next) => {
+
+    const postId = req.params.postId;
+    console.log(postId);
+
+    Post.findById(postId).then(post => {
+        res.status(200).json({
+            message : 'Post fetched successfully',
+            post : post
+        });
+
+        console.log(post);
+    }).catch(err => {
+        console.log(err);
+    })
 }

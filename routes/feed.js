@@ -12,4 +12,6 @@ router.post('/posts', [
     body('content').trim().isLength({ min : 5 })
 ], feedController.createPost);
 
+router.get('/posts/:postId', feedController.getSinglePost);
+
 module.exports = router;
