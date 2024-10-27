@@ -5,27 +5,48 @@ const path = require('path');
 
 exports.getPosts = (req, res, next) => {
 
-    Post.find().then(posts => {
-        let modifiedPosts = [];
+    // Post.find().then(posts => {
+    //     let modifiedPosts = [];
 
-        posts.map((post) => {
-            modifiedPosts.push({
-                _id : post._id.toString(),
-                title : post.title,
-                content : post.content,
-                creator : post.creator,
-                createdAt : post.createdAt,
-                imageUrl : post.imageUrl
-            });
-        })
-            res.status(200).json({
-                message : 'Posts sent',
-                posts : modifiedPosts
+    //     posts.map((post) => {
+    //         modifiedPosts.push({
+    //             _id : post._id.toString(),
+    //             title : post.title,
+    //             content : post.content,
+    //             creator : post.creator,
+    //             createdAt : post.createdAt,
+    //             imageUrl : post.imageUrl
+    //         });
+    //     })
+    //         res.status(200).json({
+    //             message : 'Posts sent',
+    //             posts : modifiedPosts
            
-        });
+    //     });
+    // }).catch(err => {
+    //     console.log(err);
+    // })
+
+    const pageNumber = req.query.page || 1;
+    const postPerPage = 2;
+    let totalItems;
+
+    Post.find().countDocuments().then(count => {
+        totalItems = count;
+        return Post.find().skip((pageNumber-1)*postPerPage).limit(postPerPage).then(posts => {
+            res.status(200).json({
+                message : "Posts fetched successfully",
+                posts : posts,
+                totalItems : totalItems
+            })
+        })
     }).catch(err => {
-        console.log(err);
+        if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err);
     })
+
 }
 
 exports.createPost = (req, res, next) => {
