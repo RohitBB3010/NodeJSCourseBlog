@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const Post = require('../models/post_model');
 const fs = require('fs');
 const path = require('path');
+const User = require('../models/user_model');
 
 exports.getPosts = (req, res, next) => {
 
@@ -46,12 +47,21 @@ exports.createPost = (req, res, next) => {
     const post = new Post({
         title : title,
         content : content,
-        creator : { name : 'Rohit' },
+        creator : req.userId,
         imageUrl : imageUrl
     });
     
     post.save().then(result => {
-        console.log("Added here");
+        return User.findById(req.userId);
+    }).then(user => {
+        creator = user;
+        user.posts.push(post);
+        return user.save()
+    }).then(result => {
+        res.status(201).json({
+            message : 'Post created successfully',
+            post : post,
+        })
     }).catch(error => {
         if(!error.statusCode){
             error.statusCode = 500;
@@ -148,6 +158,12 @@ exports.deletePost = (req, res, next) => {
         //Check logged in user
         clearImage(post.imageUrl);
         return Post.findByIdAndDelete(postId);
+    }).then(result => {
+        console.log(user);
+        return User.findById(req.userId);
+    }).then(user => {
+        user.posts.pull(postId);
+        return user.save();
     }).then(result => {
         res.status(200).json({
             message : 'Post deleted successfully',
