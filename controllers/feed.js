@@ -5,28 +5,6 @@ const path = require('path');
 
 exports.getPosts = (req, res, next) => {
 
-    // Post.find().then(posts => {
-    //     let modifiedPosts = [];
-
-    //     posts.map((post) => {
-    //         modifiedPosts.push({
-    //             _id : post._id.toString(),
-    //             title : post.title,
-    //             content : post.content,
-    //             creator : post.creator,
-    //             createdAt : post.createdAt,
-    //             imageUrl : post.imageUrl
-    //         });
-    //     })
-    //         res.status(200).json({
-    //             message : 'Posts sent',
-    //             posts : modifiedPosts
-           
-    //     });
-    // }).catch(err => {
-    //     console.log(err);
-    // })
-
     const pageNumber = req.query.page || 1;
     const postPerPage = 2;
     let totalItems;
